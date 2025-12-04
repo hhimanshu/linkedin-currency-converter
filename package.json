@@ -1,0 +1,25 @@
+{
+  "name": "linkedin-currency-converter",
+  "version": "0.1.0",
+  "description": "Currency converter API built with TypeScript and Cloudflare Workers",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "start": "wrangler dev"
+  },
+  "keywords": ["cloudflare", "workers", "typescript", "api"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/papaparse": "^5.3.14",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.94.0"
+  }
+}

@@ -1,0 +1,17 @@
+name = "linkedin-currency-converter"
+main = "src/index.ts"
+compatibility_date = "2024-12-03"
+
+# Enable text module imports for CSV files
+[[rules]]
+type = "Text"
+globs = ["**/*.csv"]
+fallthrough = true
+
+# Development configuration
+[env.development]
+name = "linkedin-currency-converter-dev"
+
+# Production configuration
+[env.production]
+name = "linkedin-currency-converter"
