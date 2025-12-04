@@ -39,11 +39,6 @@ export default {
         JSON.stringify({
           message: 'Currency Converter API',
           version: '1.0.0',
-          endpoints: {
-            '/': 'API information',
-            '/health': 'Health check',
-            '/convert': 'Convert currency (params: amount, from, to)',
-          },
           timestamp: new Date().toISOString(),
         }),
         {
