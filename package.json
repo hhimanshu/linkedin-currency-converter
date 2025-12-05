@@ -8,18 +8,33 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "types": "wrangler types",
-    "start": "wrangler dev"
+    "start": "wrangler dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "vitest run test/integration"
   },
-  "keywords": ["cloudflare", "workers", "typescript", "api"],
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "typescript",
+    "api"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "papaparse": "^5.4.1"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.5.41",
     "@cloudflare/workers-types": "^4.20241127.0",
     "@types/papaparse": "^5.3.14",
+    "@vitest/ui": "^2.1.9",
     "typescript": "^5.7.2",
+    "vite-plugin-string": "^1.2.3",
+    "vitest": "^2.1.9",
     "wrangler": "^3.94.0"
   }
 }
