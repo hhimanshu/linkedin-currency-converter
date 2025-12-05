@@ -1,6 +1,7 @@
 name = "linkedin-currency-converter"
 main = "src/index.ts"
 compatibility_date = "2024-12-03"
+compatibility_flags = ["nodejs_compat_v2"]
 
 # Enable text module imports for CSV files
 [[rules]]
