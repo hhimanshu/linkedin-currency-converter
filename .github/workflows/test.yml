@@ -90,8 +90,8 @@ jobs:
             echo "❌ Conversion failed with status: $convert_status"
             exit 1
           fi
-          # Check if response contains expected fields
-          if ! echo "$convert_response" | grep -q '"success":true'; then
+          # Check if response contains expected fields (handle JSON spacing)
+          if ! echo "$convert_response" | grep -q '"success"[[:space:]]*:[[:space:]]*true'; then
             echo "❌ Conversion response missing success field"
             exit 1
           fi
