@@ -58,6 +58,8 @@ describe('Currency Converter API (integration)', () => {
       expect(body.data.convertedAmount).toBeGreaterThan(0);
       expect(body.data.exchangeRate).toBeGreaterThan(0);
       expect(body.data.timestamp).toBeDefined();
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should convert EUR to USD', async () => {
@@ -70,6 +72,8 @@ describe('Currency Converter API (integration)', () => {
       expect(body.success).toBe(true);
       expect(body.data.convertedAmount).toBeGreaterThan(0);
       expect(body.data.exchangeRate).toBeGreaterThan(0);
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should convert USD to JPY', async () => {
@@ -81,6 +85,8 @@ describe('Currency Converter API (integration)', () => {
       const body = await response.json();
       expect(body.success).toBe(true);
       expect(body.data.to).toBe('JPY');
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should convert GBP to USD', async () => {
@@ -92,6 +98,8 @@ describe('Currency Converter API (integration)', () => {
       const body = await response.json();
       expect(body.success).toBe(true);
       expect(body.data.amount).toBe(50);
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should handle same currency conversion', async () => {
@@ -103,6 +111,8 @@ describe('Currency Converter API (integration)', () => {
       const body = await response.json();
       expect(body.data.convertedAmount).toBe(100);
       expect(body.data.exchangeRate).toBe(1.0);
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should handle same currency conversion (EUR to EUR)', async () => {
@@ -114,6 +124,8 @@ describe('Currency Converter API (integration)', () => {
       const body = await response.json();
       expect(body.data.convertedAmount).toBe(75);
       expect(body.data.exchangeRate).toBe(1.0);
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should handle decimal amounts', async () => {
@@ -125,6 +137,8 @@ describe('Currency Converter API (integration)', () => {
       const body = await response.json();
       expect(body.success).toBe(true);
       expect(body.data.amount).toBe(123.45);
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should handle large amounts', async () => {
@@ -136,6 +150,8 @@ describe('Currency Converter API (integration)', () => {
       const body = await response.json();
       expect(body.success).toBe(true);
       expect(body.data.amount).toBe(1000000);
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should handle small amounts', async () => {
@@ -147,6 +163,8 @@ describe('Currency Converter API (integration)', () => {
       const body = await response.json();
       expect(body.success).toBe(true);
       expect(body.data.amount).toBe(0.01);
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should be case insensitive for currency codes', async () => {
@@ -159,6 +177,8 @@ describe('Currency Converter API (integration)', () => {
       expect(body.success).toBe(true);
       expect(body.data.from).toBe('USD');
       expect(body.data.to).toBe('EUR');
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+      expect(typeof body.data.totalCurrencies).toBe('number');
     });
 
     it('should include CORS headers', async () => {
@@ -166,6 +186,32 @@ describe('Currency Converter API (integration)', () => {
         'http://example.com/convert?amount=100&from=USD&to=EUR'
       );
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    });
+
+    it('should include totalCurrencies field in all successful responses', async () => {
+      const response = await makeRequest(
+        'http://example.com/convert?amount=100&from=USD&to=EUR'
+      );
+      const body = await response.json();
+
+      expect(body.data.totalCurrencies).toBeDefined();
+      expect(typeof body.data.totalCurrencies).toBe('number');
+      expect(body.data.totalCurrencies).toBeGreaterThan(140);
+    });
+
+    it('should return consistent totalCurrencies across different conversions', async () => {
+      const response1 = await makeRequest(
+        'http://example.com/convert?amount=100&from=USD&to=EUR'
+      );
+      const response2 = await makeRequest(
+        'http://example.com/convert?amount=50&from=GBP&to=USD'
+      );
+
+      const body1 = await response1.json();
+      const body2 = await response2.json();
+
+      expect(body1.data.totalCurrencies).toBe(body2.data.totalCurrencies);
+      expect(body1.data.totalCurrencies).toBeGreaterThan(140);
     });
   });
 
@@ -333,6 +379,17 @@ describe('Currency Converter API (integration)', () => {
 
       const body = await response.json();
       expect(body.error.code).toBe('UNSUPPORTED_CONVERSION');
+    });
+
+    it('should NOT include totalCurrencies in error responses', async () => {
+      const response = await makeRequest(
+        'http://example.com/convert?amount=100&from=XXX&to=USD'
+      );
+      const body = await response.json();
+
+      expect(body.success).toBe(false);
+      expect(body.data).toBeUndefined();
+      expect(body.totalCurrencies).toBeUndefined();
     });
   });
 

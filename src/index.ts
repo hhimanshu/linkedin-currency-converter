@@ -2,7 +2,7 @@
  * Currency Converter API for Cloudflare Workers
  */
 
-import { isCurrencySupported } from './services/exchangeRateService';
+import { isCurrencySupported, getExchangeRateCount } from './services/exchangeRateService';
 import { convertCurrency, isConversionSupported } from './services/conversionService';
 import { validateConversionRequest } from './utils/validation';
 import { ErrorResponses } from './utils/errorResponse';
@@ -109,6 +109,7 @@ export default {
             convertedAmount: result.convertedAmount,
             exchangeRate: result.exchangeRate,
             timestamp: new Date().toISOString(),
+            totalCurrencies: getExchangeRateCount(),
           },
         };
 
