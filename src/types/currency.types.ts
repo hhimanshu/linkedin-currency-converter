@@ -37,6 +37,7 @@ export interface ConversionResponse {
     convertedAmount: number;
     exchangeRate: number;
     timestamp: string;
+    totalCurrencies: number;
   };
 }
 
