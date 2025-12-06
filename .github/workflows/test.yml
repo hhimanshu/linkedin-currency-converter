@@ -1,4 +1,4 @@
-name: Run Tests
+name: CI/CD Pipeline
 
 on:
   pull_request:
@@ -27,4 +27,96 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Cloudflare Workers
+        run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Run Smoke Tests
+        run: |
+          # Wait for deployment to propagate
+          sleep 10
+
+          # Worker URL for the harit subdomain
+          WORKER_URL="https://linkedin-currency-converter.harit.workers.dev"
+
+          echo "Running smoke tests against $WORKER_URL"
+
+          # Test 1: Health endpoint
+          echo "Test 1: Health check..."
+          health_response=$(curl -s -w "\n%{http_code}" "$WORKER_URL/health")
+          health_status=$(echo "$health_response" | tail -n1)
+          if [ "$health_status" != "200" ]; then
+            echo "❌ Health check failed with status: $health_status"
+            exit 1
+          fi
+          echo "✓ Health check passed"
+
+          # Test 2: Root endpoint
+          echo "Test 2: Root endpoint..."
+          root_response=$(curl -s -w "\n%{http_code}" "$WORKER_URL/")
+          root_status=$(echo "$root_response" | tail -n1)
+          if [ "$root_status" != "200" ]; then
+            echo "❌ Root endpoint failed with status: $root_status"
+            exit 1
+          fi
+          echo "✓ Root endpoint passed"
+
+          # Test 3: Valid currency conversion
+          echo "Test 3: Valid conversion (USD to EUR)..."
+          convert_response=$(curl -s -w "\n%{http_code}" "$WORKER_URL/convert?amount=100&from=USD&to=EUR")
+          convert_status=$(echo "$convert_response" | tail -n1)
+          if [ "$convert_status" != "200" ]; then
+            echo "❌ Conversion failed with status: $convert_status"
+            exit 1
+          fi
+          # Check if response contains expected fields
+          if ! echo "$convert_response" | grep -q '"success":true'; then
+            echo "❌ Conversion response missing success field"
+            exit 1
+          fi
+          echo "✓ Valid conversion passed"
+
+          # Test 4: Invalid parameter handling
+          echo "Test 4: Invalid parameters..."
+          invalid_response=$(curl -s -w "\n%{http_code}" "$WORKER_URL/convert?amount=invalid&from=USD&to=EUR")
+          invalid_status=$(echo "$invalid_response" | tail -n1)
+          if [ "$invalid_status" != "400" ]; then
+            echo "❌ Invalid parameter handling failed, expected 400 but got: $invalid_status"
+            exit 1
+          fi
+          echo "✓ Invalid parameter handling passed"
+
+          # Test 5: Unsupported currency
+          echo "Test 5: Unsupported currency..."
+          unsupported_response=$(curl -s -w "\n%{http_code}" "$WORKER_URL/convert?amount=100&from=USD&to=XYZ")
+          unsupported_status=$(echo "$unsupported_response" | tail -n1)
+          if [ "$unsupported_status" != "400" ]; then
+            echo "❌ Unsupported currency handling failed, expected 400 but got: $unsupported_status"
+            exit 1
+          fi
+          echo "✓ Unsupported currency handling passed"
+
+          echo ""
+          echo "✅ All smoke tests passed successfully!"
 
